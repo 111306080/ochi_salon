@@ -1,0 +1,20 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/venv/bin/python",
+  "python.analysis.autoSearchPaths": false,
+  "python.analysis.indexing": false,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/node_modules/**": true,
+    "**/__pycache__/**": true,
+    "**/venv/**": true,
+    "**/frontend/node_modules/**": true
+  },
+  "search.exclude": {
+    "**/venv": true,
+    "**/__pycache__": true,
+    "**/node_modules": true
+  },
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend"
+  ]
+}
