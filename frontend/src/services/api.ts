@@ -10,6 +10,7 @@ const api = axios.create({
   },
 });
 
+// --- Interceptors ---
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -27,8 +28,10 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // 只有在非公開頁面才強制導向，避免影響官網瀏覽
-      if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
+      // 避免在登入頁或首頁無限重導向
+      if (!window.location.pathname.includes('/login') && 
+          !window.location.pathname.includes('/staff-login') && 
+          window.location.pathname !== '/') {
           window.location.href = '/login';
       }
     }
@@ -52,7 +55,7 @@ export const authAPI = {
   },
 };
 
-// --- 設計師管理 API ---
+// --- 設計師 API ---
 export const designerAPI = {
   getAll: async () => {
     const response = await api.get('/designers');
@@ -78,36 +81,61 @@ export const designerAPI = {
 
 // --- 作品集 API ---
 export const portfolioAPI = {
-  // 取得我(設計師)的所有作品
   getMyPortfolio: async () => {
     const response = await api.get('/portfolio/my');
     return response.data;
   },
-
-  // 取得"特定設計師"的作品集 (官網用)
   getDesignerPortfolio: async (designerId: number) => {
     const response = await api.get(`/portfolio/designer/${designerId}`);
     return response.data;
   },
-
-  // 上傳作品
   upload: async (file: File, description: string, styleTag: string) => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('description', description);
     formData.append('style_tag', styleTag);
-
     const response = await api.post('/portfolio/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   },
-
-  // 刪除作品
   delete: async (id: number) => {
     const response = await api.delete(`/portfolio/${id}`);
+    return response.data;
+  }
+};
+
+// --- 預約相關 API ---
+export const reservationAPI = {
+  getServices: async () => {
+    const response = await api.get('/reservations/services');
+    return response.data;
+  },
+  checkAvailability: async (designerId: number, date: string, serviceId: number) => {
+    const response = await api.get('/reservations/availability', {
+      params: { designer_id: designerId, date, service_id: serviceId }
+    });
+    return response.data;
+  },
+  create: async (data: { designer_id: number; service_id: number; date: string; time: string; notes?: string }) => {
+    const response = await api.post('/reservations', data);
+    return response.data;
+  },
+  getMyReservations: async () => {
+    const response = await api.get('/reservations/my');
+    return response.data;
+  },
+  // 設計師取得自己的預約
+  getDesignerReservations: async (date?: string) => {
+    const params = date ? { date } : {};
+    // 若後端尚未實作 designer endpoint，這裡可能會 404，請確保後端有 update
+    // 暫時使用 getMyReservations 或是後端專屬 endpoint
+    const response = await api.get('/reservations/my'); 
+    return response.data;
+  },
+  updateStatus: async (reservationId: number, status: string) => {
+    // 後端需實作 PUT /reservations/:id/status
+    const response = await api.put(`/reservations/${reservationId}/status`, { status });
     return response.data;
   }
 };

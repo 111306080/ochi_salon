@@ -1,12 +1,22 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { User, LoginResponse, LoginCredentials } from '../types';
 import { authAPI } from '../services/api';
+
+// 定義 User 型別
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'customer' | 'designer' | 'manager';
+  phone?: string;
+  photo_url?: string;
+  style_description?: string;
+}
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: any) => Promise<void>;
   logout: () => void;
 }
 
@@ -16,7 +26,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // 初始化：檢查 localStorage 有沒有存活的 Token 和 User
   useEffect(() => {
     const initAuth = () => {
       const token = localStorage.getItem('token');
@@ -27,50 +36,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       setIsLoading(false);
     };
-
     initAuth();
   }, []);
 
-  // 登入函式
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (credentials: any) => {
     try {
-      const data: LoginResponse = await authAPI.login(credentials);
-      
-      // 存到 State
+      const data = await authAPI.login(credentials);
       setUser(data.user);
-      
-      // 存到 LocalStorage (讓重新整理後還能維持登入)
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
     } catch (error) {
       console.error('Login failed', error);
-      throw error; // 把錯誤往外拋，讓 Login 頁面處理 UI 顯示
+      throw error;
     }
   };
 
-  // 登出函式
   const logout = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login'; // 強制導回登入頁
+    window.location.href = '/';
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated: !!user, 
-      isLoading, 
-      login, 
-      logout 
-    }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// 自訂 Hook，方便在元件中使用
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

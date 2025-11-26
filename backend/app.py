@@ -11,6 +11,8 @@ load_dotenv()
 from routes.auth import auth_bp
 from routes.designer import designer_bp
 from routes.portfolio import portfolio_bp
+from routes.reservation import reservation_bp
+
 app = Flask(__name__)
 CORS(app)
 
@@ -23,6 +25,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
 app.register_blueprint(auth_bp)
 app.register_blueprint(designer_bp)
 app.register_blueprint(portfolio_bp)
+app.register_blueprint(reservation_bp)
 # 測試路由
 @app.route('/')
 def home():
