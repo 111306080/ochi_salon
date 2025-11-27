@@ -107,6 +107,8 @@ export const portfolioAPI = {
 
 // --- 預約相關 API ---
 export const reservationAPI = {
+  // ... 其他方法保持不變 ...
+  
   getServices: async () => {
     const response = await api.get('/reservations/services');
     return response.data;
@@ -125,16 +127,18 @@ export const reservationAPI = {
     const response = await api.get('/reservations/my');
     return response.data;
   },
-  // 設計師取得自己的預約
+  
+  // [修改] 改為呼叫專屬的設計師行程 API
   getDesignerReservations: async (date?: string) => {
-    const params = date ? { date } : {};
-    // 若後端尚未實作 designer endpoint，這裡可能會 404，請確保後端有 update
-    // 暫時使用 getMyReservations 或是後端專屬 endpoint
-    const response = await api.get('/reservations/my'); 
+    // 這裡對應後端的 @reservation_bp.route('/designer/schedule')
+    const response = await api.get('/reservations/designer/schedule', {
+      params: { date } 
+    });
     return response.data;
   },
+  
   updateStatus: async (reservationId: number, status: string) => {
-    // 後端需實作 PUT /reservations/:id/status
+    // 提醒：後端也要記得補上這個 PUT 路由才能運作喔！
     const response = await api.put(`/reservations/${reservationId}/status`, { status });
     return response.data;
   }

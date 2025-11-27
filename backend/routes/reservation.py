@@ -124,3 +124,53 @@ def get_my_reservations():
     user_id = request.user['user_id']
     reservations = Reservation.get_by_customer(user_id)
     return jsonify(reservations)
+
+@reservation_bp.route('/designer/schedule', methods=['GET'])
+@token_required
+def get_designer_schedule():
+    """
+    設計師取得自己的預約列表 (管理後台用)
+    支援篩選日期 ?date=2023-11-27
+    """
+    # 1. 權限檢查：確認是設計師或管理者
+    current_user = request.user
+    if current_user.get('role') not in ['designer', 'manager']:
+        return jsonify({'error': '權限不足'}), 403
+
+    designer_id = current_user.get('user_id') # 或是 'id'，需看你 Token payload 怎麼塞
+    
+    # 2. 接收日期篩選 (選填)
+    target_date = request.args.get('date') # 格式 YYYY-MM-DD
+    
+    # 3. 呼叫 Model 查詢
+    try:
+        reservations = Reservation.get_for_designer_management(designer_id, target_date)
+        return jsonify(reservations), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': '無法取得預約資料'}), 500
+    
+    
+@reservation_bp.route('/<int:reservation_id>/status', methods=['PUT'])
+@token_required
+def update_reservation_status(reservation_id):
+    """
+    更新預約狀態 (設計師接單、完成、取消)
+    Frontend: await reservationAPI.updateStatus(id, status)
+    """
+    data = request.get_json()
+    new_status = data.get('status')
+    
+    # 允許的狀態列表，避免被亂改
+    allowed_statuses = ['已確認', '已取消', '已完成']
+    
+    if not new_status or new_status not in allowed_statuses:
+        return jsonify({'error': '無效的狀態'}), 400
+    
+    # 呼叫 Model 更新 (記得去 Model 補上這個方法)
+    success = Reservation.update_status(reservation_id, new_status)
+    
+    if success:
+        return jsonify({'message': f'預約狀態已更新為 {new_status}'}), 200
+    else:
+        return jsonify({'error': '更新失敗，找不到該預約或資料庫錯誤'}), 500
