@@ -3,7 +3,7 @@ from config.database import get_db_connection
 class Service:
     @staticmethod
     def get_all():
-        """取得所有上架的服務"""
+        """取得所有上架的服務預設值"""
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""

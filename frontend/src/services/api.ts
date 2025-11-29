@@ -76,6 +76,14 @@ export const designerAPI = {
   updateProfile: async (data: any) => {
     const response = await api.put('/designers/me', data);
     return response.data;
+  },
+  getMyServices: async () => {
+    const response = await api.get('/designers/me/services');
+    return response.data;
+  },
+  updateMyServices: async (services: any[]) => {
+    const response = await api.put('/designers/me/services', { services });
+    return response.data;
   }
 };
 
@@ -109,8 +117,10 @@ export const portfolioAPI = {
 export const reservationAPI = {
   // ... 其他方法保持不變 ...
   
-  getServices: async () => {
-    const response = await api.get('/reservations/services');
+  getServices: async (designerId?: number) => {
+    const response = await api.get('/reservations/services', {
+      params: { designer_id: designerId }
+    });
     return response.data;
   },
   checkAvailability: async (designerId: number, date: string, serviceId: number) => {

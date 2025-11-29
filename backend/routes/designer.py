@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models.designer import Designer
+from models.designer import Designer, DesignerService
 from utils.auth import manager_required, token_required
 from utils.validators import validate_email, validate_phone
 from utils.cloudinary_helper import upload_image 
@@ -25,7 +25,7 @@ def create_designer():
     
     # 驗證手機格式
     if not validate_phone(data['phone']):
-        return jsonify({'error': '手機號碼格式不正確 (應為 09 開頭的10碼數字)'}), 400
+        return jsonify({'error': '手機號碼格式不正確'}), 400
     
     # 創建設計師
     designer_id, error = Designer.create(data)
@@ -106,3 +106,48 @@ def update_my_profile():
     if Designer.update_profile(user_id, data):
         return jsonify({'message': '資料更新成功'}), 200
     return jsonify({'error': '更新失敗'}), 500
+
+# 6. 取得我的服務設定列表
+@designer_bp.route('/me/services', methods=['GET'])
+@token_required
+def get_my_services():
+    """取得設計師自己的服務與價格設定"""
+    user_id = request.user['user_id']
+    
+    services = DesignerService.get_config(user_id)
+    return jsonify({'services': services}), 200
+
+# 7. 更新我的服務設定 (批次更新)
+@designer_bp.route('/me/services', methods=['PUT'])
+@token_required
+def update_my_services():
+    """
+    更新服務設定
+    前端傳送格式: 
+    {
+        "services": [
+            {"service_id": 1, "price": 1200, "duration_min": 70, "is_enabled": true},
+            ...
+        ]
+    }
+    """
+    user_id = request.user['user_id']
+    data = request.get_json()
+    
+    if not data or 'services' not in data:
+        return jsonify({'error': '資料格式錯誤'}), 400
+        
+    service_configs = data['services']
+    
+    # 基本驗證
+    for item in service_configs:
+        if 'service_id' not in item or 'price' not in item or 'duration_min' not in item:
+            return jsonify({'error': '缺少必要參數'}), 400
+
+    try:
+        DesignerService.upsert_config(user_id, service_configs)
+        return jsonify({'message': '服務設定已更新'}), 200
+    except Exception as e:
+        print(f"Update service error: {e}")
+        return jsonify({'error': '更新失敗'}), 500
+    

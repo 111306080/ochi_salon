@@ -4,8 +4,8 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import { reservationAPI, designerAPI } from '../../services/api';
 
-// 定義步驟
-const STEPS = ['選擇服務', '選擇設計師', '預約時間', '確認資訊'];
+// 步驟
+const STEPS = ['選擇設計師', '選擇服務', '預約時間', '確認資訊'];
 
 const Reservation: React.FC = () => {
   const navigate = useNavigate();
@@ -44,6 +44,30 @@ const Reservation: React.FC = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    const fetchDesignerServices = async () => {
+      if (!selectedDesigner) return;
+      
+      setIsLoading(true);
+      try {
+        // 取得客製化價格與時間
+        const data = await reservationAPI.getServices(selectedDesigner.designer_id);
+        setServices(data);
+
+        setSelectedService(null);
+        setSelectedDate('');
+        setSelectedTime('');
+      } catch (err) {
+        console.error(err);
+        setError('無法載入服務項目');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDesignerServices();
+  }, [selectedDesigner]);
+
   // 當日期改變時，查詢可用時段
   useEffect(() => {
     if (selectedDesigner && selectedService && selectedDate) {
@@ -69,8 +93,8 @@ const Reservation: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (currentStep === 0 && !selectedService) return alert('請先選擇服務');
-    if (currentStep === 1 && !selectedDesigner) return alert('請選擇設計師');
+    if (currentStep === 0 && !selectedDesigner) return alert('請選擇設計師');
+    if (currentStep === 1 && !selectedService) return alert('請先選擇服務');
     if (currentStep === 2 && (!selectedDate || !selectedTime)) return alert('請選擇日期與時間');
     
     setCurrentStep(prev => prev + 1);
@@ -130,34 +154,9 @@ const Reservation: React.FC = () => {
         <h2 className="text-2xl font-bold mb-6 text-gray-800">{STEPS[currentStep]}</h2>
 
         <div className="flex-1">
-          {/* 步驟 1: 選擇服務 */}
-          {currentStep === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {services.map(service => (
-                <div 
-                  key={service.service_id}
-                  onClick={() => setSelectedService(service)}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
-                    selectedService?.service_id === service.service_id 
-                      ? 'border-pink-500 bg-pink-50' 
-                      : 'border-gray-200 hover:border-pink-300'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-gray-900">{service.name}</h3>
-                    <span className="text-pink-600 font-bold">${service.base_price}</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mb-2">{service.description || '無描述'}</p>
-                  <div className="text-xs text-gray-400 bg-white inline-block px-2 py-1 rounded border border-gray-100">
-                    ⏱ 約 {service.duration_min} 分鐘
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
 
-          {/* 步驟 2: 選擇設計師 */}
-          {currentStep === 1 && (
+          {/* 步驟 1: 選擇設計師 */}
+          {currentStep === 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {designers.map(designer => (
                 <div 
@@ -180,6 +179,44 @@ const Reservation: React.FC = () => {
               ))}
             </div>
           )}
+
+          {/* 步驟 2: 選擇服務 */}
+          {currentStep === 1 && (
+            <div>
+              {isLoading ? (
+                <div className="text-center text-gray-500 py-10">正在讀取設計師的服務項目...</div>
+              ) : services.length === 0 ? (
+                 <div className="text-center text-gray-500 py-10">很抱歉，此設計師目前沒有可預約的服務項目。</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {services.map(service => (
+                    <div 
+                      key={service.service_id}
+                      onClick={() => setSelectedService(service)}
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
+                        selectedService?.service_id === service.service_id 
+                          ? 'border-pink-500 bg-pink-50' 
+                          : 'border-gray-200 hover:border-pink-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-gray-900">{service.name}</h3>
+                        <span className="text-pink-600 font-bold">
+                          ${service.final_price || service.base_price}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-2">{service.description || '無描述'}</p>
+                      <div className="text-xs text-gray-400 bg-white inline-block px-2 py-1 rounded border border-gray-100">
+                        ⏱ 約 {service.duration_min} 分鐘
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          
 
           {/* 步驟 3: 選擇時間 */}
           {currentStep === 2 && (
@@ -263,9 +300,11 @@ const Reservation: React.FC = () => {
                     <span className="text-gray-500">時間</span>
                     <span className="font-medium">{selectedTime?.slice(0, 5)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">預估費用</span>
-                    <span className="font-bold text-lg text-pink-600">${selectedService?.base_price}</span>
+                  <div className="flex justify-between border-t border-pink-200 pt-2 mt-2">
+                    <span className="text-gray-700 font-bold">預估費用</span>
+                    <span className="font-bold text-xl text-pink-600">
+                      ${selectedService?.final_price ?? selectedService?.base_price}
+                    </span>
                   </div>
                   {notes && (
                     <div className="pt-3 mt-3 border-t border-pink-200">

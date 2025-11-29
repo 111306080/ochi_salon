@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
+import ServiceSettings from '../../components/designer/ServiceSettings';
 import { portfolioAPI, designerAPI, authAPI } from '../../services/api';
 
 // --- 型別定義 ---
@@ -233,6 +234,12 @@ const Portfolio: React.FC = () => {
             </Card>
           </div>
         </div>
+      </section>
+
+      <hr className="border-gray-200" />
+      
+      <section>
+        <ServiceSettings />
       </section>
 
       <hr className="border-gray-200" />

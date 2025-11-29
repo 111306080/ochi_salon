@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.reservation import Reservation
+from models.designer import DesignerService
 from models.service import Service
 from utils.auth import token_required
 from datetime import datetime, timedelta
@@ -8,8 +9,21 @@ reservation_bp = Blueprint('reservation', __name__, url_prefix='/api/reservation
 
 @reservation_bp.route('/services', methods=['GET'])
 def get_services():
-    """取得服務列表"""
-    services = Service.get_all()
+    """
+    取得服務列表
+    - 若有傳 designer_id: 回傳該設計師的客製化價目表
+    - 若無傳 designer_id: 回傳系統原始價目表
+    """
+    designer_id = request.args.get('designer_id')
+    
+    if designer_id:
+        services = DesignerService.get_public_services(designer_id)
+    else:
+        # 撈取系統預設
+        services = Service.get_all()
+        for s in services:
+            s['final_price'] = s['base_price']
+            
     return jsonify(services)
 
 @reservation_bp.route('/availability', methods=['GET'])
@@ -35,10 +49,9 @@ def check_availability():
     # 2. 取得設計師當天已有的預約 (包含開始時間與時長)
     existing_reservations = Reservation.get_designer_daily_schedule(designer_id, date_str)
 
-    # 3. 定義營業時間 (假設 11:00 - 20:00)
-    # 未來這部分應該從 designer.schedule_info 或系統設定讀取
+    # 3. 營業時間 (假設 11:00 - 20:00)
     shop_open_time = datetime.strptime(f"{date_str} 11:00", "%Y-%m-%d %H:%M")
-    shop_close_time = datetime.strptime(f"{date_str} 20:00", "%Y-%m-%d %H:%M")
+    shop_close_time = datetime.strptime(f"{date_str} 19:00", "%Y-%m-%d %H:%M")
 
     # 4. 演算法：每 30 分鐘切一個 slot，檢查能不能塞進去
     available_slots = []
@@ -91,7 +104,7 @@ def create_reservation():
         return jsonify({'error': '資料不完整'}), 400
 
     # 取得服務價格作為 final_price
-    service = Service.get_by_id(data['service_id'])
+    service = DesignerService.get_service_config(data['designer_id'], data['service_id'])
     if not service:
         return jsonify({'error': '服務不存在'}), 404
 
@@ -104,7 +117,8 @@ def create_reservation():
         'designer_id': data['designer_id'],
         'service_id': data['service_id'],
         'reserved_time': reserved_time_str,
-        'final_price': service['base_price'], # 初始價格等於基本價
+        'final_price': service['final_price'],
+        'duration_min': service['duration_min'],
         'notes': data.get('notes', '')
     }
 
