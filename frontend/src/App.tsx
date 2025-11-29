@@ -190,14 +190,14 @@ const LandingPage = () => {
            {isWorkLoading ? (
              <div className="text-center py-10">載入中...</div>
            ) : (
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto pr-2">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2">
                 {designerWorks.length > 0 ? (
                   designerWorks.map((work: any) => (
                     <div key={work.portfolio_id} className="relative group rounded-lg overflow-hidden cursor-pointer">
                        <img 
                          src={work.image_url} 
                          alt={work.description} 
-                         className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-110"
+                         className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
                        />
                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
                           <div>
