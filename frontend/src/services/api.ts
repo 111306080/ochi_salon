@@ -117,6 +117,14 @@ export const portfolioAPI = {
   }
 };
 
+// --- 主管專用 API ---
+export const managerAPI = {
+  getRFMAnalysis: async () => {
+    const response = await api.get('/manager/analysis/rfm');
+    return response.data;
+  }
+};
+
 // --- 預約相關 API ---
 export const reservationAPI = {
   // ... 其他方法保持不變 ...

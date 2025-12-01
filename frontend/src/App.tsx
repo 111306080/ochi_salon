@@ -11,13 +11,14 @@ import Portfolio from './pages/designer/Portfolio';
 import Reservation from './pages/customer/Reservation';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import DesignerDashboard from './pages/designer/DesignerDashboard';
+import CustomerAnalysis from './pages/manager/CustomerAnalysis';
+import ServiceManagement from './pages/manager/ServiceManagement';
 
 // --- 引入共用元件 ---
 import Navbar from './components/common/Navbar';
 import Button from './components/common/Button';
 import Card from './components/common/Card';
 import Modal from './components/common/Modal';
-import ServiceManagement from './pages/manager/ServiceManagement';
 
 // --- PrivateRoute (路由守衛) ---
 const PrivateRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -252,9 +253,11 @@ const ManagerDashboardHome = () => (
         </Link>
       </Card>
       <Card>
-        <h3 className="text-xl font-bold mb-3">營收報表</h3>
-        <p className="text-gray-600 mb-4">本月累積營收概況</p>
-        <Button className="w-full" variant="secondary" disabled>開發中</Button>
+        <h3 className="text-xl font-bold mb-3">顧客價值分析</h3>
+        <p className="text-gray-600 mb-4">RFM 模型與分眾行銷</p>
+        <Link to="/manager/analysis">
+          <Button className="w-full">查看分析報表</Button>
+        </Link>
       </Card>
     </div>
   </div>
@@ -276,7 +279,8 @@ function App() {
             <Route path="/manager" element={<PrivateRoute roles={['manager']}><Navbar /><ManagerDashboardHome /></PrivateRoute>} />
             <Route path="/manager/personnel" element={<PrivateRoute roles={['manager']}><Navbar /><Personnel /></PrivateRoute>} />
             <Route path="/manager/services" element={<PrivateRoute roles={['manager']}><Navbar /><ServiceManagement /></PrivateRoute>} />
-            
+            <Route path="/manager/analysis" element={<PrivateRoute roles={['manager']}><Navbar /><CustomerAnalysis /></PrivateRoute>} />
+
             {/* 3. 設計師路由 */}
             <Route path="/designer" element={<PrivateRoute roles={['designer']}><Navbar /><DesignerDashboard /></PrivateRoute>} />
             <Route path="/designer/portfolio" element={<PrivateRoute roles={['designer']}><Navbar /><Portfolio /></PrivateRoute>} />
