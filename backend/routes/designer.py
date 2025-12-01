@@ -151,3 +151,11 @@ def update_my_services():
         print(f"Update service error: {e}")
         return jsonify({'error': '更新失敗'}), 500
     
+@designer_bp.route('/services/all', methods=['GET'])
+@token_required
+@manager_required
+def get_all_services_overview():
+    """取得所有設計師的服務設定總覽"""
+    data = DesignerService.get_all_designers_configs()
+    return jsonify({'data': data}), 200
+    

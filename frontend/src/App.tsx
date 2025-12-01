@@ -17,6 +17,7 @@ import Navbar from './components/common/Navbar';
 import Button from './components/common/Button';
 import Card from './components/common/Card';
 import Modal from './components/common/Modal';
+import ServiceManagement from './pages/manager/ServiceManagement';
 
 // --- PrivateRoute (路由守衛) ---
 const PrivateRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
@@ -244,13 +245,15 @@ const ManagerDashboardHome = () => (
         </Link>
       </Card>
       <Card>
-        <h3 className="text-xl font-bold mb-3">營收報表</h3>
-        <p className="text-gray-600 mb-4">本月累積營收概況</p>
-        <Button className="w-full" variant="secondary" disabled>開發中</Button>
+        <h3 className="text-xl font-bold mb-3">服務項目與價格總覽</h3>
+        <p className="text-gray-600 mb-4">查看設計師服務項目與價格設定</p>
+        <Link to="/manager/services">
+           <Button className="w-full">檢視價格設定</Button>
+        </Link>
       </Card>
       <Card>
-        <h3 className="text-xl font-bold mb-3">系統設定</h3>
-        <p className="text-gray-600 mb-4">服務項目與價格設定</p>
+        <h3 className="text-xl font-bold mb-3">營收報表</h3>
+        <p className="text-gray-600 mb-4">本月累積營收概況</p>
         <Button className="w-full" variant="secondary" disabled>開發中</Button>
       </Card>
     </div>
@@ -272,7 +275,8 @@ function App() {
             {/* 2. 主管路由 */}
             <Route path="/manager" element={<PrivateRoute roles={['manager']}><Navbar /><ManagerDashboardHome /></PrivateRoute>} />
             <Route path="/manager/personnel" element={<PrivateRoute roles={['manager']}><Navbar /><Personnel /></PrivateRoute>} />
-
+            <Route path="/manager/services" element={<PrivateRoute roles={['manager']}><Navbar /><ServiceManagement /></PrivateRoute>} />
+            
             {/* 3. 設計師路由 */}
             <Route path="/designer" element={<PrivateRoute roles={['designer']}><Navbar /><DesignerDashboard /></PrivateRoute>} />
             <Route path="/designer/portfolio" element={<PrivateRoute roles={['designer']}><Navbar /><Portfolio /></PrivateRoute>} />

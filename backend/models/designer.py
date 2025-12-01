@@ -231,3 +231,58 @@ class DesignerService:
                 """
                 cursor.execute(sql, (designer_id,))
                 return cursor.fetchall()
+    
+    @staticmethod
+    def get_all_designers_configs():
+        """
+        取得所有設計師的服務設定列表 (主管檢視用)
+        """
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                    SELECT 
+                        d.designer_id,
+                        d.name as designer_name,
+                        d.photo_url,
+                        s.service_id,
+                        s.name as service_name,
+                        s.base_price,
+                        s.duration_min as base_duration,
+                        dsi.price as custom_price,
+                        dsi.duration_min as custom_duration,
+                        COALESCE(dsi.is_enabled, 1) as is_enabled
+                    FROM designer d
+                    JOIN service s ON s.is_active = 1
+                    LEFT JOIN designer_service_item dsi 
+                        ON d.designer_id = dsi.designer_id AND s.service_id = dsi.service_id
+                    WHERE d.role = 'designer' AND d.is_active = 1
+                    ORDER BY d.designer_id, s.service_id
+                """
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                
+                result = {}
+                for row in rows:
+                    did = row['designer_id']
+                    if did not in result:
+                        result[did] = {
+                            'designer_id': did,
+                            'name': row['designer_name'],
+                            'photo_url': row['photo_url'],
+                            'services': []
+                        }
+                    
+                    final_price = row['custom_price'] if row['custom_price'] is not None else row['base_price']
+                    final_duration = row['custom_duration'] if row['custom_duration'] is not None else row['base_duration']
+                    
+                    result[did]['services'].append({
+                        'service_id': row['service_id'],
+                        'name': row['service_name'],
+                        'base_price': row['base_price'],
+                        'final_price': final_price,
+                        'final_duration': final_duration,
+                        'is_enabled': bool(row['is_enabled']),
+                        'is_customized': row['custom_price'] is not None # 標記是否有自行設定
+                    })
+                
+                return list(result.values())

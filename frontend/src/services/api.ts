@@ -84,6 +84,10 @@ export const designerAPI = {
   updateMyServices: async (services: any[]) => {
     const response = await api.put('/designers/me/services', { services });
     return response.data;
+  },
+  getAllServicesOverview: async () => {
+    const response = await api.get('/designers/services/all');
+    return response.data;
   }
 };
 
