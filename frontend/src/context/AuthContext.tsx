@@ -16,7 +16,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: any) => Promise<void>;
+  // 修改 1: 讓 login 回傳 Promise<any>，以便外部取得 API 回傳結果
+  login: (credentials: any) => Promise<any>;
   logout: () => void;
 }
 
@@ -32,7 +33,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const savedUser = localStorage.getItem('user');
 
       if (token && savedUser) {
-        setUser(JSON.parse(savedUser));
+        try {
+           setUser(JSON.parse(savedUser));
+        } catch (e) {
+           console.error("解析 User 資料失敗", e);
+           localStorage.removeItem('user');
+        }
       }
       setIsLoading(false);
     };
@@ -42,9 +48,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (credentials: any) => {
     try {
       const data = await authAPI.login(credentials);
+      
+      // 更新狀態
       setUser(data.user);
+      
+      // 更新 LocalStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+
+      // ★★★ 修改重點：將後端回傳的 data 回傳出去 ★★★
+      // 這樣登入頁面才能拿到 data.user.role 進行正確跳轉
+      return data; 
+
     } catch (error) {
       console.error('Login failed', error);
       throw error;
@@ -52,10 +67,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    // ★★★ 修改重點：這裡只負責清空資料，不要做頁面跳轉 ★★★
+    // 讓 Navbar 的 handleLogout 來決定要 navigate 去哪裡
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/';
+    
+    // 移除這行霸道的程式碼：
+    // window.location.href = '/'; 
   };
 
   return (

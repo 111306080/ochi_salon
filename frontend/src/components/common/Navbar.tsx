@@ -12,10 +12,23 @@ const Navbar: React.FC<NavbarProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // --- 修改重點開始 ---
   const handleLogout = () => {
+  // 1. 先決定要去哪
+  const isStaff = user?.role === 'manager' || user?.role === 'designer';
+  const targetPath = isStaff ? '/staff-login' : '/';
+
+  // 2. ★ 關鍵修改：先執行導向！
+  // 這樣我們會先跳轉到 targetPath (它是公開頁面，不會踢人)
+  navigate(targetPath);
+
+  // 3. 再執行登出
+  // 使用 setTimeout 把登出動作延後一點點 (50毫秒)，確保路由已經切換過去了
+  // 避免 React 的自動批次處理 (Batching) 導致 PrivateRoute 還是先抓到狀態變更
+  setTimeout(() => {
     logout();
-    navigate('/');
-  };
+  }, 50);
+};
 
   const isActive = (path: string) => location.pathname === path ? 'text-pink-600 font-bold' : 'text-gray-500 hover:text-gray-900';
 

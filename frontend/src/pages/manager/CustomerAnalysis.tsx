@@ -3,6 +3,7 @@ import Card from '../../components/common/Card';
 import Modal from '../../components/common/Modal'; 
 import Button from '../../components/common/Button';
 import { managerAPI } from '../../services/api';
+import RFMChart from './RFMChart';
 
 interface RFMCustomer {
   customer_id: number;
@@ -138,6 +139,11 @@ const CustomerAnalysis: React.FC = () => {
           </Card>
         </div>
       )}
+
+          <RFMChart 
+      data={filteredCustomers}  // 這是要顯示的點 (會隨按鈕過濾變少)
+      fullData={customers}      // 這是所有資料 (用來固定座標軸最大值，永遠不變)
+    />
 
       <div className="flex flex-wrap gap-2 mb-6">
         {segments.map(seg => (

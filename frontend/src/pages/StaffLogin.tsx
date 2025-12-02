@@ -3,17 +3,19 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import type{ UserRole } from '../types';
+import type { UserRole } from '../types';
 
-const StaffLogin: React.FC = () => {
+const StaffLogin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   
+  // --- 補回這些缺失的 State 定義 ---
   const [role, setRole] = useState<UserRole>('designer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // ------------------------------
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,15 +23,27 @@ const StaffLogin: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await login({ email, password, role });
+      // 1. 呼叫 login，並接收回傳的資料
+      const data = await login({ email, password, role });
       
-      if (role === 'manager') {
+      // 2. 取得真實身份 (優先使用後端回傳的 role)
+      // 如果 data.user 存在就用 data.user.role，否則 fallback 到原本選的 role
+      const actualRole = data?.user?.role || role;
+
+      // 3. 依據真實身份導向
+      if (actualRole === 'manager') {
         navigate('/manager');
-      } else {
+      } else if (actualRole === 'designer') {
         navigate('/designer');
+      } else {
+        // 萬一有顧客跑來員工後台登入成功
+        navigate('/customer');
       }
+
     } catch (err: any) {
-      setError(err.response?.data?.error || '登入失敗，請檢查權限或帳號密碼');
+      console.error(err);
+      // 錯誤處理
+      setError(err.response?.data?.error || err.message || '登入失敗，請檢查權限或帳號密碼');
     } finally {
       setIsSubmitting(false);
     }

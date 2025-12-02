@@ -35,12 +35,31 @@ const CustomerAuth: React.FC = () => {
     try {
       if (isLoginMode) {
         // --- 登入邏輯 ---
-        await login({ 
+        // 1. 執行登入，並接收 AuthContext 回傳的 API 結果
+        const data = await login({ 
           email: formData.email, 
           password: formData.password, 
-          role: 'customer' // 強制指定為顧客
+          role: 'customer' // 雖然是顧客頁面，但我們還是傳這個參數給後端參考
         });
-        navigate('/customer');
+
+        // 2. 取得真實身份 (優先使用後端回傳的 role)
+        // 使用 ?. 防止資料結構有誤時崩潰
+        const actualRole = data?.user?.role;
+
+        // 3. 依據真實身份導向
+        switch (actualRole) {
+          case 'manager':
+            navigate('/manager'); // 員工跑錯棚，送回後台
+            break;
+          case 'designer':
+            navigate('/designer'); // 設計師跑錯棚，送回工作台
+            break;
+          case 'customer':
+          default:
+            navigate('/customer'); // 真正的顧客去顧客中心
+            break;
+        }
+
       } else {
         // --- 註冊邏輯 ---
         await authAPI.register({
@@ -49,12 +68,13 @@ const CustomerAuth: React.FC = () => {
             password: formData.password,
             phone: formData.phone
         });
-        // 註冊成功後，自動登入或切換回登入頁
         alert('註冊成功！請直接登入');
         setIsLoginMode(true);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || (isLoginMode ? '登入失敗' : '註冊失敗'));
+      console.error(err);
+      // 錯誤處理：優先顯示後端回傳的錯誤訊息
+      setError(err.response?.data?.error || err.message || (isLoginMode ? '登入失敗' : '註冊失敗'));
     } finally {
       setIsLoading(false);
     }
