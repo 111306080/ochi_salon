@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from models.analysis import AnalysisService
+from models.sales import SalesModel
 from utils.auth import token_required, manager_required
 
 manager_bp = Blueprint('manager', __name__, url_prefix='/api/manager')
@@ -43,4 +44,28 @@ def get_rfm_analysis():
     return jsonify({
         'summary': summary,
         'customers': analyzed_data
+    })
+
+@manager_bp.route('/analysis/sales', methods=['GET'])
+@token_required
+@manager_required
+def get_sales_analysis():
+    """取得銷售儀表板所需的所有數據"""
+    
+    kpi = SalesModel.get_monthly_kpi()
+    avg_interval = SalesModel.get_purchase_interval()
+    acquisition_rate = SalesModel.get_acquisition_rate()
+    retention_rate = SalesModel.get_retention_rate()
+    churn_rate = 100 - retention_rate
+    trend = SalesModel.get_monthly_trend()
+    
+    return jsonify({
+        'kpi': kpi,
+        'metrics': {
+            'avg_interval_days': avg_interval,
+            'acquisition_rate': acquisition_rate,
+            'retention_rate': retention_rate,
+            'churn_rate': round(churn_rate, 2)
+        },
+        'trend': trend
     })

@@ -122,6 +122,10 @@ export const managerAPI = {
   getRFMAnalysis: async () => {
     const response = await api.get('/manager/analysis/rfm');
     return response.data;
+  },
+  getSalesAnalysis: async () => {
+    const response = await api.get('/manager/analysis/sales');
+    return response.data;
   }
 };
 

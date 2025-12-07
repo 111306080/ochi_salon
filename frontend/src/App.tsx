@@ -13,6 +13,7 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import DesignerDashboard from './pages/designer/DesignerDashboard';
 import CustomerAnalysis from './pages/manager/CustomerAnalysis';
 import ServiceManagement from './pages/manager/ServiceManagement';
+import SalesAnalysis from './pages/manager/SalesAnalysis';
 
 // --- 引入共用元件 ---
 import Navbar from './components/common/Navbar';
@@ -259,6 +260,13 @@ const ManagerDashboardHome = () => (
           <Button className="w-full">查看分析報表</Button>
         </Link>
       </Card>
+      <Card>
+        <h3 className="text-xl font-bold mb-3">營運報表</h3>
+        <p className="text-gray-600 mb-4">銷售成長、留存與流失分析等</p>
+        <Link to="/manager/sales">
+           <Button className="w-full">查看報表</Button>
+        </Link>
+      </Card>
     </div>
   </div>
 );
@@ -280,7 +288,8 @@ function App() {
             <Route path="/manager/personnel" element={<PrivateRoute roles={['manager']}><Navbar /><Personnel /></PrivateRoute>} />
             <Route path="/manager/services" element={<PrivateRoute roles={['manager']}><Navbar /><ServiceManagement /></PrivateRoute>} />
             <Route path="/manager/analysis" element={<PrivateRoute roles={['manager']}><Navbar /><CustomerAnalysis /></PrivateRoute>} />
-
+            <Route path="/manager/sales" element={<PrivateRoute roles={['manager']}><Navbar /><SalesAnalysis /></PrivateRoute>} />
+            
             {/* 3. 設計師路由 */}
             <Route path="/designer" element={<PrivateRoute roles={['designer']}><Navbar /><DesignerDashboard /></PrivateRoute>} />
             <Route path="/designer/portfolio" element={<PrivateRoute roles={['designer']}><Navbar /><Portfolio /></PrivateRoute>} />
