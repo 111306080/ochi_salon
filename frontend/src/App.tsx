@@ -14,6 +14,7 @@ import DesignerDashboard from './pages/designer/DesignerDashboard';
 import CustomerAnalysis from './pages/manager/CustomerAnalysis';
 import ServiceManagement from './pages/manager/ServiceManagement';
 import SalesAnalysis from './pages/manager/SalesAnalysis';
+import Inventory from './pages/manager/Inventory'
 
 // --- 引入共用元件 ---
 import Navbar from './components/common/Navbar';
@@ -169,56 +170,77 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* 作品集 Modal */}
+      {/* 作品集 Modal (已修改重點區域) */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={selectedDesigner ? `${selectedDesigner.name} 的作品集` : '作品集'}
       >
         <div className="mt-2">
+           {/* 設計師簡介區塊 */}
            {selectedDesigner && (
-             <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+             <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 border border-gray-100 rounded-lg">
                 <img 
                   src={selectedDesigner.photo_url || "https://via.placeholder.com/100"} 
-                  className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
                   alt="Avatar"
                 />
                 <div>
-                   <h4 className="font-bold text-lg">{selectedDesigner.name}</h4>
+                   <h4 className="font-bold text-lg text-gray-900">{selectedDesigner.name}</h4>
                    <p className="text-sm text-gray-600 line-clamp-2">{selectedDesigner.style_description || "暫無簡介"}</p>
                 </div>
              </div>
            )}
 
+           {/* 作品列表區塊 */}
            {isWorkLoading ? (
-             <div className="text-center py-10">載入中...</div>
+             <div className="text-center py-16 text-gray-500">載入作品中...</div>
            ) : (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-2">
+             // 修改：使用 grid 佈局，在較大螢幕上併排顯示，增加寬度感
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto p-1">
                 {designerWorks.length > 0 ? (
                   designerWorks.map((work: any) => (
-                    <div key={work.portfolio_id} className="relative group rounded-lg overflow-hidden cursor-pointer">
-                       <img 
-                         src={work.image_url} 
-                         alt={work.description} 
-                         className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                       />
-                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
-                          <div>
-                            <span className="text-xs text-white bg-pink-600 px-2 py-1 rounded-full mb-1 inline-block">{work.style_tag}</span>
+                    // 每個作品是一個卡片
+                    <div key={work.portfolio_id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
+                       {/* 照片區域：設定為較大的固定高度 h-80 */}
+                       <div className="relative h-80 w-full bg-gray-100">
+                          <img 
+                             src={work.image_url} 
+                             alt={work.description || '作品照片'} 
+                             className="w-full h-full object-cover"
+                          />
+                          {/* 風格標籤 */}
+                          <div className="absolute top-3 left-3">
+                             <span className="bg-white/95 text-pink-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm ring-1 ring-pink-50">
+                               {work.style_tag}
+                             </span>
                           </div>
+                       </div>
+                       
+                       {/* 描述文字區域：位於照片下方，確保文字顏色清晰 */}
+                       <div className="p-4 border-t border-gray-50 flex-grow bg-white">
+                          <p className="text-gray-800 text-base leading-relaxed whitespace-pre-line">
+                            {/* 這裡會嘗試顯示 work.description，如果沒有則顯示預設文字 */}
+                            {work.description ? work.description : <span className="text-gray-400 italic text-sm">這位設計師這張作品沒有填寫描述...</span>}
+                          </p>
                        </div>
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-10 text-gray-500 bg-gray-50 rounded-lg">這位設計師還沒有上傳作品喔！</div>
+                  <div className="col-span-full text-center py-16 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    這位設計師還沒有上傳作品喔！
+                  </div>
                 )}
              </div>
            )}
            
+           {/* 底部按鈕區 */}
            <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
              <Button variant="secondary" onClick={() => setIsModalOpen(false)}>關閉</Button>
              <Link to="/login">
-                <Button className="bg-pink-600 hover:bg-pink-700 border-none text-white">預約此設計師</Button>
+                <Button className="bg-pink-600 hover:bg-pink-700 border-none text-white shadow-md px-6">
+                  預約此設計師
+                </Button>
              </Link>
            </div>
         </div>
@@ -267,6 +289,15 @@ const ManagerDashboardHome = () => (
            <Button className="w-full">查看報表</Button>
         </Link>
       </Card>
+      <Card>
+        <h3 className="text-xl font-bold mb-3">
+           存貨管理系統
+        </h3>
+        <p className="text-gray-600 mb-4">監控產品庫存、EOQ 自動訂購計算</p>
+        <Link to="/manager/inventory">
+          <Button className="w-full">進入庫存管理</Button>
+        </Link>
+      </Card>
     </div>
   </div>
 );
@@ -289,7 +320,7 @@ function App() {
             <Route path="/manager/services" element={<PrivateRoute roles={['manager']}><Navbar /><ServiceManagement /></PrivateRoute>} />
             <Route path="/manager/analysis" element={<PrivateRoute roles={['manager']}><Navbar /><CustomerAnalysis /></PrivateRoute>} />
             <Route path="/manager/sales" element={<PrivateRoute roles={['manager']}><Navbar /><SalesAnalysis /></PrivateRoute>} />
-            
+            <Route path="/manager/inventory" element={<PrivateRoute roles={['manager']}><Navbar /><Inventory /></PrivateRoute>} />
             {/* 3. 設計師路由 */}
             <Route path="/designer" element={<PrivateRoute roles={['designer']}><Navbar /><DesignerDashboard /></PrivateRoute>} />
             <Route path="/designer/portfolio" element={<PrivateRoute roles={['designer']}><Navbar /><Portfolio /></PrivateRoute>} />

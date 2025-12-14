@@ -13,6 +13,7 @@ from routes.designer import designer_bp
 from routes.portfolio import portfolio_bp
 from routes.reservation import reservation_bp
 from routes.manager import manager_bp
+from routes.inventory import inventory_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -28,6 +29,7 @@ app.register_blueprint(designer_bp)
 app.register_blueprint(portfolio_bp)
 app.register_blueprint(reservation_bp)
 app.register_blueprint(manager_bp)
+app.register_blueprint(inventory_bp)
 # 測試路由
 @app.route('/')
 def home():

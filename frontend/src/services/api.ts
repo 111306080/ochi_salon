@@ -168,6 +168,58 @@ export const reservationAPI = {
     const response = await api.put(`/reservations/${reservationId}/status`, { status });
     return response.data;
   }
+  
 };
+export const inventoryAPI = {
+  // 1. 取得所有產品列表
+  getProducts: async () => {
+    const response = await api.get('/inventory/products');
+    return response.data;
+  },
+  
+  // 2. 新增產品
+  createProduct: async (formData: FormData) => {
+    // Axios 會自動偵測 FormData 並設定 Content-Type 為 multipart/form-data
+    const response = await api.post('/inventory/products', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 
+  // 3. 取得單一產品詳情 (含 EOQ 參數)
+  getProductDetail: async (id: number) => {
+    const response = await api.get(`/inventory/products/${id}`);
+    return response.data;
+  },
+
+  // 4. 更新 EOQ 參數並計算
+  updateEOQ: async (id: number, data: { 
+    annual_demand: number; 
+    ordering_cost: number; 
+    holding_cost_rate: number;
+    safety_stock: number;
+  }) => {
+    const response = await api.put(`/inventory/products/${id}/eoq`, data);
+    return response.data;
+  },
+
+  // 5. 執行庫存交易 (進貨/銷貨)
+  addTransaction: async (data: {
+    product_id: number;
+    transaction_type: 'IN' | 'OUT';
+    quantity: number;
+    notes?: string;
+  }) => {
+    const response = await api.post('/inventory/transactions', data);
+    return response.data;
+  },
+
+  // 6. 取得產品交易紀錄
+  getTransactions: async (id: number) => {
+    const response = await api.get(`/inventory/products/${id}/transactions`);
+    return response.data;
+  }
+};
 export default api;
