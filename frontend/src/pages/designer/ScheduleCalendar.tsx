@@ -92,7 +92,7 @@ const ScheduleCalendar: React.FC<Props> = ({ reservations }) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-bold text-gray-800">🗓️ 行程表 (除錯模式)</h2>
+        <h2 className="text-lg font-bold text-gray-800">🗓️ 行程表</h2>
         <div className="flex gap-2">
           <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-gray-100 rounded">◀</button>
           <span className="font-medium">
