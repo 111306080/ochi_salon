@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type{ LoginCredentials, RegisterData, LoginResponse } from '../types';
 
-const API_URL = 'https://ochi-salon-backend.onrender.com/';
+const API_URL = 'https://ochi-salon-backend.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
