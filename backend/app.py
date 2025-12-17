@@ -68,15 +68,8 @@ def internal_error(error):
     return jsonify({'error': '伺服器內部錯誤', 'status': 500}), 500
 
 if __name__ == '__main__':
-    print("🚀 奧創髮藝後端服務啟動中...")
-    print("📍 API 位址: http://localhost:5000")
-    print("🌍 環境: " + os.getenv('FLASK_ENV', 'production'))
-    print("📊 初始化資料庫連線...")
-    
-    # 測試資料庫連線
-    if test_connection():
-        print("✅ 資料庫連線正常，開始啟動服務...")
-    else:
-        print("⚠️  資料庫連線異常，但仍然啟動服務...")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(
+        host='0.0.0.0',
+        port=int(os.environ.get("PORT", 5000)),
+        debug=(os.getenv("FLASK_ENV") == "development")
+    )
