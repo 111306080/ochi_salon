@@ -11,7 +11,7 @@ const Reservation: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  
 
   // 資料列表
   const [services, setServices] = useState<any[]>([]);
@@ -38,7 +38,6 @@ const Reservation: React.FC = () => {
         setDesigners((designersData.designers || []).filter((d: any) => d.role === 'designer'));
       } catch (err) {
         console.error(err);
-        setError('無法載入預約資料，請稍後再試');
       }
     };
     loadData();
@@ -59,7 +58,6 @@ const Reservation: React.FC = () => {
         setSelectedTime('');
       } catch (err) {
         console.error(err);
-        setError('無法載入服務項目');
       } finally {
         setIsLoading(false);
       }
